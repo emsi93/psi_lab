@@ -1,7 +1,9 @@
 **/target/**
+bin/
 .mvn/wrapper/maven-wrapper.jar
 
 ### STS ###
+.settings
 .apt_generated
 .classpath
 .factorypath
@@ -23,4 +25,3 @@ nbdist/
 .nb-gradle/
 
 .classpath
-.project
