@@ -1,0 +1,91 @@
+create database psi;
+use psi;
+SET SQL_SAFE_UPDATES = 0;
+
+create table user(
+id int auto_increment primary key not null,
+login varchar(20) not null,
+password varchar(30) not null,
+login_count int default 0,
+date_block datetime,
+last_login datetime,
+last_logout datetime
+);
+
+create table history_login(
+id int auto_increment not null primary key,
+id_user int not null,
+date datetime not null,
+description varchar(20) not null
+);
+alter table history_login
+add constraint fk_id_user foreign key (id_user) references user(id);
+
+
+create table history_passwords(
+id int auto_increment not null primary key,
+id_user int not null,
+password varchar(30) not null
+);
+alter table history_passwords
+add constraint fk_id_user_history_passwords foreign key (id_user) references user(id);
+
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `checkLoginAndPassword`(loginParam varchar(20), passwordParam varchar(30)) RETURNS int(11)
+BEGIN
+declare count_of_login int;
+declare login_count_var int;
+declare actual_time datetime;
+declare id_user int;
+SELECT NOW() INTO actual_time;
+SELECT COUNT(*) INTO count_of_login FROM user WHERE login = loginParam AND password = passwordParam AND (date_block IS NULL OR date_block < actual_time);
+SELECT id INTO id_user FROM user WHERE login = loginParam;
+if count_of_login = 1 THEN
+	UPDATE user SET login_count = 0, date_block = NULL, last_login = actual_time WHERE login = loginParam;
+	INSERT INTO history_login (id_user, date, description) VALUES (id_user, actual_time,'logowanie');
+ELSE
+	SELECT login_count INTO login_count_var FROM user WHERE login = loginParam;
+	SET login_count_var = login_count_var + 1;
+	UPDATE user SET login_count = login_count_var WHERE login = loginParam;
+	INSERT INTO history_login (id_user, date, description) VALUES (id_user, actual_time,'b³êdne logowanie');
+    IF login_count_var = 3 THEN
+		UPDATE user SET date_block = (SELECT NOW() + INTERVAL 10 MINUTE) WHERE login = loginParam;
+    END IF;
+END IF;
+RETURN count_of_login;
+END
+
+
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `logout`(loginParam varchar(20)) RETURNS int(11)
+BEGIN
+declare id_user int;
+declare actual_time datetime;
+
+SELECT NOW() INTO actual_time;
+SELECT id INTO id_user FROM user WHERE login = loginParam;
+UPDATE user SET last_logout = actual_time WHERE id = id_user;
+INSERT INTO history_login (id_user, date, description) VALUES (id_user, actual_time,'wylogowanie');
+
+RETURN 1;
+END
+
+CREATE DEFINER=`root`@`localhost` FUNCTION `changePassword`(loginParam varchar(20), passwordParam varchar(30)) RETURNS int(11)
+BEGIN
+declare count_of_passwords int;
+declare count_of_passwords_from_user int;
+declare id_user_var int;
+declare old_password varchar(30);
+
+SELECT id INTO id_user_var FROM user WHERE login = loginParam;
+SELECT count(*) INTO count_of_passwords FROM history_passwords WHERE id_user = id_user_var AND password = passwordParam;
+SELECT count(*) INTO count_of_passwords_from_user FROM user WHERE login = loginParam AND password = passwordParam;
+
+IF count_of_passwords = 0 AND count_of_passwords_from_user = 0 THEN
+	SELECT password INTO old_password from user WHERE login = loginParam;
+	INSERT INTO history_passwords(id_user, password) VALUES (id_user_var, old_password);
+	UPDATE user SET password = passwordParam WHERE login = loginParam;
+    RETURN 1;
+END IF;
+RETURN 0;
+END

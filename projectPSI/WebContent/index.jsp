@@ -15,11 +15,11 @@
 			<form method="post" action="login">
 			<div class="form-group">
 				<label for="login">Login</label><br/>
-				<input id="login" type="text" name="login" class="form-control"><br/>
+				<input id="login" type="text" name="login" class="form-control" maxlength="20"><br/>
 			</div>
 			<div class="form-group">
 				<label for="password">Hasło</label><br/> 
-				<input id="password" type="password" name="password" class="form-control"><br/>
+				<input id="password" type="password" name="password" class="form-control" maxlength="30"><br/>
 			</div>
 			<input type="submit" value="Zaloguj" class="btn btn-primary">
 			<input type="reset" value="Wyczyść" class="btn btn-primary">

@@ -2,7 +2,6 @@ package com.project.psi.servlets;
 
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -13,39 +12,44 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
-import com.project.psi.db.entity.History;
 import com.project.psi.db.jdbc.ConnectionJDBC;
 
-@WebServlet("/login")
-public class LoginServlet extends HttpServlet {
+@WebServlet("/reset")
+public class ResetPasswordServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 
-	public LoginServlet() {
+	public ResetPasswordServlet() {
 		super();
 	}
 
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
-		String login = request.getParameter("login");
-		String password = request.getParameter("password");
-		String url = null;
-		
-		try {
-			if(ConnectionJDBC.login(login, password)){
-				url = "/welcome.jsp";
-				HttpSession session=request.getSession();  
-		        session.setAttribute("session",login);  
-		        List<History> history = ConnectionJDBC.getHistory(login);
-		        request.setAttribute("history", history);
-			}else{
-				url = "/index.jsp";
-				request.setAttribute("msg", "B³êdne dane");
-			}
-		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-			e.printStackTrace();
+		HttpSession session = request.getSession(false);
+		String login = null;
+		if (session != null) {
+			login = (String) session.getAttribute("session");
 		}
-			
+		String password = request.getParameter("password");
+		String confirmPassword = request.getParameter("confirmPassword");
+		String url = null;
+
+		if (!password.equals(confirmPassword)) {
+			url = "/changePassword.jsp";
+			request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
+		} else
+			try {
+				if (ConnectionJDBC.changePassword(login, confirmPassword)) {
+					url = "/changePassword.jsp";
+					request.setAttribute("success", "Has³o zosta³o zmienione");
+				} else {
+					url = "/changePassword.jsp";
+					request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
+				}
+			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+				e.printStackTrace();
+			}
+
 		ServletContext context = getServletContext();
 		RequestDispatcher dispatcher = context.getRequestDispatcher(url);
 		dispatcher.forward(request, response);
