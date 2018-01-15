@@ -33,7 +33,7 @@ public class LogoutServlet extends HttpServlet {
 		String url = null;
 		try {
 			if (login != null && ConnectionJDBC.logout(login)) {
-				url = "/index.jsp";
+				url = "/checkIp.jsp";
 				session.invalidate();
 			} else {
 				url = "/error.jsp";

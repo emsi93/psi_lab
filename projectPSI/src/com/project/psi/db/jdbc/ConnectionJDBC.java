@@ -21,7 +21,7 @@ public class ConnectionJDBC {
 	public static boolean login(String login, String password)
 			throws SQLException, InstantiationException, IllegalAccessException, ClassNotFoundException {
 		connect();
-		String query = "select checkLoginAndPassword('" + login + "','" + password + "') as wynik";
+		String query = "SELECT checkLoginAndPassword('" + login + "','" + password + "') AS wynik";
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
 		int wynik = 0;
@@ -57,7 +57,7 @@ public class ConnectionJDBC {
 	public static boolean logout(String login)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		connect();
-		String query = "select logout('" + login + "') as wynik";
+		String query = "SELECT logout('" + login + "') AS wynik";
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
 		int wynik = 0;
@@ -73,11 +73,31 @@ public class ConnectionJDBC {
 		close();
 		return false;
 	}
+	
+	
+	public static boolean checkIpAddress(String ipAddress) throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException{
+		connect();
+		String query = "SELECT COUNT(*) AS wynik FROM ip_address WHERE ip = '" + ipAddress + "'";
+		Statement stmt = conn.createStatement();
+		ResultSet rs = stmt.executeQuery(query);
+		int wynik = 1;
+		while (rs.next()) {
+			wynik = rs.getInt("wynik");
+		}
+
+		if (wynik == 1) {
+			close();
+			return false;
+		}
+
+		close();
+		return true;
+	}
 
 	public static boolean changePassword(String login, String password)
 			throws InstantiationException, IllegalAccessException, ClassNotFoundException, SQLException {
 		connect();
-		String query = "select changePassword('" + login + "','" + password + "') as wynik";
+		String query = "SELECT changePassword('" + login + "','" + password + "') AS wynik";
 		Statement stmt = conn.createStatement();
 		ResultSet rs = stmt.executeQuery(query);
 		int wynik = 0;
