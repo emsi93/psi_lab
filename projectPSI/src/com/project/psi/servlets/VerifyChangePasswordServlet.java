@@ -1,6 +1,7 @@
 package com.project.psi.servlets;
 
 import java.io.IOException;
+import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -9,45 +10,50 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 
+import com.project.psi.db.jdbc.ConnectionJDBC;
 
-@WebServlet("/reset")
-public class ResetPasswordServlet extends HttpServlet {
+@WebServlet("/verifyChangePassword")
+public class VerifyChangePasswordServlet extends HttpServlet{
+
 	private static final long serialVersionUID = 1L;
-
-	public ResetPasswordServlet() {
+	
+	public VerifyChangePasswordServlet(){
 		super();
 	}
-
+	
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
-		
-		
-		String password = request.getParameter("password");
-		String confirmPassword = request.getParameter("confirmPassword");
+		HttpSession session = request.getSession(false);
+		String decision = request.getParameter("decision");
+		String login = null;
+		String password  = (String) request.getParameter("password");
+		if (session != null) {
+			login = (String) session.getAttribute("session");
+			
+		}
 		String url = null;
-
-		if (!password.equals(confirmPassword)) {
-			url = "/changePassword.jsp";
-			request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
-		} else{
-			url = "/verifyChangePassword.jsp";
-			request.setAttribute("password", password);
-			
-			
-			/*try {
-				if (ConnectionJDBC.changePassword(login, confirmPassword)) {
+	
+		if(decision.equals("yes")){
+			try {
+				if(decision.equals("yes") && ConnectionJDBC.changePassword(login, password)){
 					url = "/changePassword.jsp";
 					request.setAttribute("success", "Has³o zosta³o zmienione");
-				} else {
+				}else{
 					url = "/changePassword.jsp";
-					request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
+					request.setAttribute("msg", "Has³o zosta³o u¿yte");
 				}
 			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-				e.printStackTrace();*/
+				e.printStackTrace();
 			}
-
+			
+		}else{
+			url = "/welcome.jsp";
+		}
+		
 		ServletContext context = getServletContext();
 		RequestDispatcher dispatcher = context.getRequestDispatcher(url);
 		dispatcher.forward(request, response);
@@ -58,4 +64,5 @@ public class ResetPasswordServlet extends HttpServlet {
 		request.setCharacterEncoding("UTF-8");
 		doGet(request, response);
 	}
+
 }

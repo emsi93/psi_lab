@@ -30,6 +30,10 @@ password varchar(30) not null
 alter table history_passwords
 add constraint fk_id_user_history_passwords foreign key (id_user) references user(id);
 
+create table ip_address (
+id int auto_increment primary key not null,
+ip varchar(15) not null
+);
 
 CREATE DEFINER=`root`@`localhost` FUNCTION `checkLoginAndPassword`(loginParam varchar(20), passwordParam varchar(30)) RETURNS int(11)
 BEGIN
@@ -76,7 +80,9 @@ declare count_of_passwords int;
 declare count_of_passwords_from_user int;
 declare id_user_var int;
 declare old_password varchar(30);
+declare actual_time datetime;
 
+SELECT NOW() INTO actual_time;
 SELECT id INTO id_user_var FROM user WHERE login = loginParam;
 SELECT count(*) INTO count_of_passwords FROM history_passwords WHERE id_user = id_user_var AND password = passwordParam;
 SELECT count(*) INTO count_of_passwords_from_user FROM user WHERE login = loginParam AND password = passwordParam;
@@ -85,6 +91,7 @@ IF count_of_passwords = 0 AND count_of_passwords_from_user = 0 THEN
 	SELECT password INTO old_password from user WHERE login = loginParam;
 	INSERT INTO history_passwords(id_user, password) VALUES (id_user_var, old_password);
 	UPDATE user SET password = passwordParam WHERE login = loginParam;
+	INSERT INTO history_login (id_user, date, description) VALUES (id_user_var, actual_time,'zmiana has³a');
     RETURN 1;
 END IF;
 RETURN 0;

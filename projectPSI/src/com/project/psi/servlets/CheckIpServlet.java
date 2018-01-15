@@ -1,6 +1,8 @@
 package com.project.psi.servlets;
 
 import java.io.IOException;
+import java.net.Inet4Address;
+import java.sql.SQLException;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -10,44 +12,32 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.project.psi.db.jdbc.ConnectionJDBC;
 
-@WebServlet("/reset")
-public class ResetPasswordServlet extends HttpServlet {
+@WebServlet("/checkIP")
+public class CheckIpServlet extends HttpServlet{
 	private static final long serialVersionUID = 1L;
 
-	public ResetPasswordServlet() {
+	public CheckIpServlet(){
 		super();
 	}
-
+	
 	protected void doGet(HttpServletRequest request, HttpServletResponse response)
 			throws ServletException, IOException {
 		response.setContentType("text/html;charset=UTF-8");
-		
-		
-		String password = request.getParameter("password");
-		String confirmPassword = request.getParameter("confirmPassword");
+		String ipAddress = Inet4Address.getLocalHost().getHostAddress();
 		String url = null;
-
-		if (!password.equals(confirmPassword)) {
-			url = "/changePassword.jsp";
-			request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
-		} else{
-			url = "/verifyChangePassword.jsp";
-			request.setAttribute("password", password);
-			
-			
-			/*try {
-				if (ConnectionJDBC.changePassword(login, confirmPassword)) {
-					url = "/changePassword.jsp";
-					request.setAttribute("success", "Has³o zosta³o zmienione");
-				} else {
-					url = "/changePassword.jsp";
-					request.setAttribute("msg", "Has³o zosta³o u¿yte lub musisz podaæ dwa takie same");
-				}
-			} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
-				e.printStackTrace();*/
+		
+		try {
+			if(ConnectionJDBC.checkIpAddress(ipAddress)){
+				url = "/index.jsp";
+			}else{
+				url = "/invalidaddress.jsp";
 			}
-
+		} catch (InstantiationException | IllegalAccessException | ClassNotFoundException | SQLException e) {
+			e.printStackTrace();
+		}
+			
 		ServletContext context = getServletContext();
 		RequestDispatcher dispatcher = context.getRequestDispatcher(url);
 		dispatcher.forward(request, response);
