@@ -10,6 +10,19 @@
 	<description>PSI Web app</description>
 	<url>http://maven.apache.org</url>
 
+	<developers>
+        <developer>
+            <id>214446</id>
+            <name>Michal Krejpowicz</name>
+            <email>214446@edu.p.lodz.pl</email>
+        </developer>
+        <developer>
+            <id>214478</id>
+            <name>Mateusz Wisniewski</name>
+            <email>214478@edu.p.lodz.pl</email>
+        </developer>
+    </developers>
+
 	<dependencies>
 		<dependency>
 			<groupId>mysql</groupId>
